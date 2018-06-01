@@ -1,0 +1,14 @@
+body, html {
+    height: 100%;
+    background: black;
+}
+
+.bg{
+    background-image: url("b.jpg");
+    height: 100%; 
+    padding: 50px;
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    /* background-size: cover; */
+}
