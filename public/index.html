@@ -1,22 +1,113 @@
 <html>
 
 <head>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-        crossorigin="anonymous">
-
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-    <div class="bg"></div>
+    <header></header>
+    <section>
+        <div class="container">
+            <h1>Yondu Club</h1>
+            <h3>Peoples have reached this page <span id="seencount">1</span> views.</h3>
+            <div class="form-group">
+                Not A Member?
+            </div>
+            <form class="form-inline">
+                <div class="form-group mb-2">
+                    <label for="username" class="sr-only">Password</label>
+                    <input type="text" class="form-control" id="username" placeholder="Put your name here">
+                </div>
+                <button type="button" id="register" class="btn btn-dark mx-sm-3 mb-2">Register</button>
+            </form>
+            <div>
+                <h1>Member:</h1>
+            </div>
+            <div id="member">
+
+            </div>
+        </div>
+    </section>
+    <video autoplay muted loop id="background">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
 </body>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
     crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+<script>
+    $(document).ready(() => {
+        $("#seencount").html("~");
+
+        $("#register").click(() => {
+            let name = $("#username").val();
+            createUser(name).then(data => {
+                console.log(data)
+            }).catch(err => console.log(err));
+        });
+
+        member()
+            .then(data => {
+                const source = data.hits.hits;
+                var sb = [];
+                source.forEach(elem => {
+                    const random = Math.floor(Math.random() * 6) + 1;
+                    sb.push(`<h${random}>${elem._source.username}</h${random}>`);
+                })
+                sb = sb.join(" ");
+                console.log(sb);
+                $("#member").html(sb);
+            })
+
+        loadSeen()
+            .then(data => {
+                $("#seencount").html(data.count + 1);
+            })
+            .catch();
+
+        sendSeen()
+            .catch(err => console.log(err));
+    });
+
+    const member = () => {
+        return $.ajax({
+            method: "GET",
+            url: "http://yondu.club:9200/yondu_user/_search?size=35",
+            dataType: "json"
+        })
+    }
+
+    const loadSeen = () => {
+        return $.ajax({
+            method: "GET",
+            url: "http://yondu.club:9200/yondu_seen/_count",
+            dataType: "json"
+        })
+    }
+
+    const sendSeen = () => {
+        return $.ajax({
+            method: "POST",
+            url: "http://yondu.club:9200/yondu_seen/data",
+            data: JSON.stringify({ Timestamp: moment().format("YYYY-MM-DDTHH:mm:ss")+"Z" }),
+            contentType: 'application/json'
+        });
+    }
+
+    const createUser = async (name) => {
+        return $.ajax({
+            method: "POST",
+            url: "http://yondu.club:9200/yondu_user/data",
+            data: JSON.stringify({ username: name }),
+            contentType: 'application/json'
+        });
+    }
+</script>
 
 </html>
